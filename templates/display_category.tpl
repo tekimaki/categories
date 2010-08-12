@@ -42,7 +42,7 @@
 			{include file="bitpackage:liberty/services_inc.tpl" serviceLocation='body' serviceHash=$gContent->mInfo}
 			{* =-=- CUSTOM BEGIN: body -=-= *}
 
-			{include file="bitpackage:categories/edge_inc.tpl" graph=$gContent->getField('graph')}
+			{include file="bitpackage:categories/graph_inc.tpl" graph=$gContent->getField('graph')}
 
 			{* =-=- CUSTOM END: body -=-= *}
 

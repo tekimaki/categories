@@ -15,7 +15,7 @@
 			<div>{$node.content.summary|escape}</div>
 		{/if}
 
-		{include file="bitpackage:categories/edge_inc.tpl" graph=$node.nodes}
+		{include file="bitpackage:categories/graph_inc.tpl" graph=$node.nodes}
 	</li>
 	{/foreach}
 </ul><!-- end outermost ul -->

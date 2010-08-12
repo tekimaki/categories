@@ -28,7 +28,7 @@
 			<div class="floaticon">{tr}Actions{/tr}</div>
 			<div class="clear">
 			{foreach item=dataItem from=$categoryList}
-				{include file="bitpackage:categories/edge_inc.tpl" graph=$dataItem.graph}
+				{include file="bitpackage:categories/graph_inc.tpl" graph=$dataItem.graph}
 			{/foreach}
 			</div>
 			{else}
