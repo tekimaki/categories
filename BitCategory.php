@@ -138,7 +138,6 @@ class BitCategory extends LibertyMime {
 				// Implement LibertyGraph
 				require_once( LIBERTYGRAPH_PKG_PATH.'LibertyGraph.php' );
 				$LCGraph = new LibertyGraph( $this->mContentId );
-				// vd( $LCGraph->getTailGraphHash() );
 				$this->mInfo['graph'] = $LCGraph->getHeadGraphHash();
 
 				/* =-=- CUSTOM END: load -=-= */
@@ -384,6 +383,16 @@ class BitCategory extends LibertyMime {
 
 		/* =-=- CUSTOM BEGIN: getList -=-= */
 
+		// default: limit to only top level categories, e.g. categories with no tails
+		if( empty( $pParamHash['all'] ) ){
+			$joinSql .= " INNER JOIN `".BIT_DB_PREFIX."liberty_edge` lcedge ON ( lc.`content_id` = lcedge.`head_content_id` )";
+			$whereSql .= " AND lcedge.`tail_content_id` IS NULL";
+
+			// Implement LibertyGraph - used in iter below
+			require_once( LIBERTYGRAPH_PKG_PATH.'LibertyGraph.php' );
+			$LCGraph = new LibertyGraph();
+		}
+
 		/* =-=- CUSTOM END: getList -=-= */
 
 
@@ -428,6 +437,17 @@ class BitCategory extends LibertyMime {
 				$parseHash['data']			= $res['data'];
 				$res['parsed_data'] = $this->parseData( $parseHash ); 
 			}
+
+			/* =-=- CUSTOM BEGIN: getListIter -=-= */
+
+			// default: limit to only top level categories, e.g. categories with no tails
+			// fetch their full graph
+			if( empty( $pParamHash['all'] ) ){
+				$LCGraph->setContentId( $res['content_id'] );
+				$res['graph'] = $LCGraph->getHeadGraphHash();
+			}
+
+			/* =-=- CUSTOM END: getListIter -=-= */
 
 			$ret[] = $res;
 		}

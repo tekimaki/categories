@@ -24,65 +24,26 @@
 			<input type="hidden" name="offset" value="{$control.offset|escape}" />
 			<input type="hidden" name="sort_mode" value="{$control.sort_mode|escape}" />
 
-			<table class="data">
-				<tr>
-					{if $gBitSystem->isFeatureActive( 'categories_list_category_id' ) eq 'y'}
-						<th>{smartlink ititle="Category Id" isort=category_id offset=$control.offset iorder=desc idefault=1}</th>
-					{/if}
-
-					{if $gBitSystem->isFeatureActive( 'category_list_title' ) eq 'y'}
-						<th>{smartlink ititle="Title" isort=title offset=$control.offset}</th>
-					{/if}
-
-
-
-
-					{if $gBitSystem->isFeatureActive( 'category_list_summary' ) eq 'y'}
-						<th>{smartlink ititle="Text" isort=data offset=$control.offset}</th>
-					{/if}
-
-					<th>{tr}Actions{/tr}</th>
-				</tr>
-
-				{foreach item=dataItem from=$categoryList}
-					<tr class="{cycle values="even,odd"}">
-						{if $gBitSystem->isFeatureActive( 'list_category_id' )}
-							<td><a href="{$smarty.const.CATEGORIES_PKG_URL}index.php?category_id={$dataItem.category_id|escape:"url"}" title="{$dataItem.category_id}">{$dataItem.category_id}</a></td>
-						{/if}
-
-						{if $gBitSystem->isFeatureActive( 'category_list_title' )}
-							<td><a href="{$smarty.const.CATEGORIES_PKG_URL}index.php?category_id={$dataItem.category_id|escape:"url"}" title="{$dataItem.category_id}">{$dataItem.title|escape}</a></td>
-						{/if}
-
-
-
-
-						{if $gBitSystem->isFeatureActive( 'category_list_summary' )}
-							<td>{$dataItem.summary|escape}</td>
-						{/if}
-
-
-						<td class="actionicon">
-						{if $gBitUser->hasPermission( 'p_categories_category_update' )}
-							{smartlink ititle="Edit" ifile="edit_category.php" ibiticon="icons/accessories-text-editor" category_id=$dataItem.category_id}
-						{/if}
-						{if $gBitUser->hasPermission( 'p_categories_category_expunge' )}
-							<input type="checkbox" name="checked[]" title="{$dataItem.title|escape}" value="{$dataItem.category_id}" />
-						{/if}
-						</td>
-					</tr>
-				{foreachelse}
-					<tr class="norecords"><td colspan="16">
-						{tr}No records found{/tr}
-					</td></tr>
-				{/foreach}
+			{if $categoryList}
+			<div class="floaticon">{tr}Actions{/tr}</div>
+			<div class="clear">
+			{foreach item=dataItem from=$categoryList}
+				{include file="bitpackage:categories/edge_inc.tpl" graph=$dataItem.graph}
+			{/foreach}
+			</div>
+			{else}
+			<table>
+				<tr class="norecords"><td colspan="16">
+					{tr}No records found{/tr}
+				</td></tr>
 			</table>
+			{/if}
 
 			{if $gBitUser->hasPermission( 'p_categories_category_expunge' )}
 				<div style="text-align:right;">
 					<script type="text/javascript">/* <![CDATA[ check / uncheck all */
 						document.write("<label for=\"switcher\">{tr}Select All{/tr}</label> ");
-						document.write("<input name=\"switcher\" id=\"switcher\" type=\"checkbox\" onclick=\"BitBase.BitBase.switchCheckboxes(this.form.id,'checked[]','switcher')\" /><br />");
+						document.write("<input name=\"switcher\" id=\"switcher\" type=\"checkbox\" onclick=\"BitBase.switchCheckboxes(this.form.id,'checked[]','switcher')\" /><br />");
 					/* ]]> */</script>
 
 					<select name="submit_mult" onchange="this.form.submit();">
