@@ -1,0 +1,32 @@
+ # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+ # $Header: $
+ #
+ # Copyright (c) 2010 Tekimaki LLC http://tekimaki.com
+ #
+ # All Rights Reserved. See below for details and a complete list of authors.
+ # #
+ # $Id: $
+ # @package categories
+ # @subpackage htaccess
+ # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+<IfModule mod_rewrite.c>
+    RewriteEngine  on
+    # Uncomment this if mod_rewrites are not working for you. some hosting services have cranky mod_rewrite
+    #RewriteBase /categories/
+
+    RewriteCond %{SCRIPT_FILENAME}              -f [OR]
+    RewriteCond %{SCRIPT_FILENAME}/index.php    -f
+
+
+    # Rules for the type category
+    RewriteRule    ^category$ list_category.php [L,QSA]
+    RewriteRule    ^category/([0-9]+)$  index.php?category_id=$1  [L]
+    RewriteRule    ^category/edit/([0-9]+)$  edit_category.php?category_id=$1  [L]
+    RewriteRule    ^category/delete/([0-9]+)$  remove_category.php?category_id=$1  [L]
+
+    # =-=- CUSTOM BEGIN: htaccess -=-= #
+
+    # =-=- CUSTOM END: htaccess -=-= #
+
+
+</IfModule>
