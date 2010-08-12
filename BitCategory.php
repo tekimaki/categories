@@ -108,7 +108,9 @@ class BitCategory extends LibertyMime {
 				uuc.`login` AS creator_user, uuc.`real_name` AS creator_real_name,
 				lch.`hits`,
 				lf.`storage_path` as avatar,
-				lfp.storage_path AS `primary_attachment_path`
+				lfp.storage_path AS `primary_attachment_path`,
+				lcedge.`tail_content_id`,
+				lctail.`title` as tail_title
 				$selectSql
 				FROM `".BIT_DB_PREFIX."category_data` category
 					INNER JOIN `".BIT_DB_PREFIX."liberty_content` lc ON( lc.`content_id` = category.`content_id` ) $joinSql
@@ -119,6 +121,8 @@ class BitCategory extends LibertyMime {
 					LEFT OUTER JOIN `".BIT_DB_PREFIX."liberty_files` lf ON (lf.`file_id` = a.`foreign_id`)
 					LEFT OUTER JOIN `".BIT_DB_PREFIX."liberty_attachments` la ON( la.`content_id` = lc.`content_id` AND la.`is_primary` = 'y' )
 					LEFT OUTER JOIN `".BIT_DB_PREFIX."liberty_files` lfp ON( lfp.`file_id` = la.`foreign_id` )
+					LEFT JOIN `".BIT_DB_PREFIX."liberty_edge` lcedge ON ( lc.`content_id` = lcedge.`head_content_id` )
+					LEFT JOIN `".BIT_DB_PREFIX."liberty_content` lctail ON ( lctail.`content_id` = lcedge.`tail_content_id` ) 
 				WHERE category.`$lookupColumn`=? $whereSql";
 			$result = $this->mDb->query( $query, $bindVars );
 
@@ -213,7 +217,9 @@ class BitCategory extends LibertyMime {
 			$table = BIT_DB_PREFIX."category_data";
 			if( $this->mCategoryId ) {
 				$locId = array( "category_id" => $pParamHash['category']['category_id'] );
-				$result = $this->mDb->associateUpdate( $table, $pParamHash['category_store'], $locId );
+				// there are no extra fields so no updating to do 
+				// @TODO update pkgmkr for this condition
+				// $result = $this->mDb->associateUpdate( $table, $pParamHash['category_store'], $locId );
 			} else {
 				$pParamHash['category_store']['content_id'] = $pParamHash['category']['content_id'];
 				if( @$this->verifyId( $pParamHash['category_id'] ) ) {
@@ -531,6 +537,15 @@ class BitCategory extends LibertyMime {
 
 	/* This section is for any helper methods you wish to create */
 	/* =-=- CUSTOM BEGIN: methods -=-= */
+	
+	public function getTitleByContentId( $pContentId ){
+		$query = "SELECT content_id, title FROM liberty_content WHERE content_id = ?";
+		$result = $this->mDb->query( $query, array( $pContentId ) );
+		if( $result && $result->numRows() ) {
+			return $result->fields;
+		}
+		return NULL;
+	}
 
 	/* =-=- CUSTOM END: methods -=-= */
 

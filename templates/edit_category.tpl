@@ -55,6 +55,16 @@
 						<input type="hidden" name="category[category_id]" value="{$gContent->mInfo.category_id}" />
 						{formfeedback warning=$errors.store}
 
+						{if $gContent->mInfo.tail_content_id || $tailContentRef}
+						<div class="row">
+							{formlabel label="Parent Category" for="tail_content_id"}
+							{forminput}
+								<input type="hidden" name="liberty_edge[tail_content_id]" id="tail_content_id" value="{$gContent->mInfo.tail_content_id|default:$tailContentRef.content_id}" />
+								{$gContent->mInfo.tail_title|default:$tailContentRef.title}
+							{/forminput}
+						</div>
+						{/if}
+
 						<div class="row">
 							{formfeedback warning=$errors.title}
 							{formlabel label="Title" for="title"}

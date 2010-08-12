@@ -5,6 +5,7 @@
 		<div class="floaticon">
 		{if $gBitUser->hasPermission( 'p_categories_category_update' )}
 			{smartlink ititle="Edit" ifile="edit_category.php" ibiticon="icons/accessories-text-editor" content_id=$node.content.content_id}
+			{smartlink ititle="Add Sub-Category" ifile="edit_category.php" ibiticon="icons/document-new" tail_content_id=$node.content.content_id}
 		{/if}
 		{if $gBitUser->hasPermission( 'p_categories_category_expunge' )}
 			<input type="checkbox" name="checked[]" title="{$node.content.title|escape}" value="{$node.content.content_id}" />

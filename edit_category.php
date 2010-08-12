@@ -74,6 +74,11 @@ $gContent->invokeServices( 'content_edit_function' );
 
 /* =-=- CUSTOM BEGIN: edit -=-= */
 
+if( !empty( $_REQUEST['tail_content_id'] ) ){
+	$tailContentRef = $gContent->getTitleByContentId( $_REQUEST['tail_content_id'] );
+	$gBitSmarty->assign( 'tailContentRef', $tailContentRef );
+}
+
 /* =-=- CUSTOM END: edit -=-= */
 
 // Include any javascript files we need for editing
