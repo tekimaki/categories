@@ -599,6 +599,44 @@ class BitCategory extends LibertyMime {
         }   
     }
 
+	public function graphContent( $pContentId, $pParamHash ){
+		// Implement LibertyGraph Edge
+		require_once( LIBERTYGRAPH_PKG_PATH.'LibertyEdge.php' );
+		$LCEdge = new LibertyEdge();
+
+		// insert the content into the desired pigeonholes
+		if( !empty( $pParamHash['categories'] ) ){
+			foreach( $pParamHash['categories'] as $catContentId ){
+				if( $this->verifyId( $catContentId ) ){
+					$storeHash['liberty_edge'] = array(
+						'tail_content_id' => $catContentId,
+						'head_content_id'=>$pContentId,
+						'weight'=>0,
+					);
+					$LCEdge->store( $storeHash );
+				}
+			}
+		}
+
+		return count( $this->getErrors() == 0 );
+	}
+
+	/**
+	 * Remove content object from all categories
+	 */
+	public function degraphContent( $pContentId ){
+		// @TODO move this to LibertyEdge.php 
+		$query = "DELETE FROM liberty_edge lcedge 
+					USING liberty_content lc
+					WHERE lcedge.tail_content_id = lc.content_id
+					AND lcedge.head_content_id = ? AND lc.content_type_guid = ?"; 
+		$bindVars = array();
+		$bindVars[] = $pContentId;
+		$bindVars[] = BITCATEGORY_CONTENT_TYPE_GUID;
+
+		$this->mDb->query( $query, $bindVars );
+	}
+
 	/* =-=- CUSTOM END: methods -=-= */
 
 
@@ -608,50 +646,49 @@ class BitCategory extends LibertyMime {
 
 function categories_content_display( $pObject, $pParamHash ){
 	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
-		$categories = new BitCategory(); 
 		// @TODO - load up categories for content object
+		// $categories = new BitCategory(); 
 		// $pObject->mInfo['categories'] = $categories->previewFields( $pParamHash );
 	}
 }
 function categories_content_preview( $pObject, $pParamHash ){
 	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
-		$categories = new BitCategory(); 
-		$pObject->mInfo['categories'] = $categories->previewFields( $pParamHash );
+		// $categories = new BitCategory(); 
+		// $pObject->mInfo['categories'] = $categories->previewFields( $pParamHash );
 	}
 }
 function categories_content_edit( $pObject, $pParamHash ){
-	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
+	global $gBitSmarty, $gBitUser, $gBitSystem;
+
+	if( is_object($pObject) && isset($pObject->mContentTypeGuid) &&
+		$pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) &&
+		$gBitUser->hasPermission( 'p_categories_categorize' ) ) {
+
 		// pass through to display to load up content data
 		categories_content_display( $pObject, $pParamHash );
 
 		// load up cat root ids for services content type has
 		// expected options hash $catOptions[$id][$cats];
-		global $gBitSmarty, $gBitUser, $gBitSystem;
 		$catOptions = array();
-		$catOptionsLabels = array();
 
-		if( is_object($pObject) && isset($pObject->mContentTypeGuid) &&
-			$gBitUser->hasPermission( 'p_categories_categorize' ) ) {
+		$lcconfig = LCConfig::getInstance();
 
-			$lcconfig = LCConfig::getInstance();
+		// $category = new BitCategory();
 
-			// $category = new BitCategory();
+		// Implement LibertyGraph
+		require_once( LIBERTYGRAPH_PKG_PATH.'LibertyGraph.php' );
+		$LCGraph = new LibertyGraph();
 
-			// Implement LibertyGraph
-			require_once( LIBERTYGRAPH_PKG_PATH.'LibertyGraph.php' );
-			$LCGraph = new LibertyGraph();
+		// get list of services for content type
+		$catOptions = array();
+		foreach( $lcconfig->getAllConfig( $pObject->mContentTypeGuid ) as $config=>$value ){
+			if( strpos( $config, 'service_category_content_id' ) !== false  && $value != 'n' ){
+				$cid = substr( $config, strrpos( $config, '_' )+1 );
 
-			// get list of services for content type
-			$catOptions = array();
-			foreach( $lcconfig->getAllConfig( $pObject->mContentTypeGuid ) as $config=>$value ){
-				if( strpos( $config, 'service_category_content_id' ) !== false  && $value != 'n' ){
-					$cid = substr( $config, strrpos( $config, '_' )+1 );
-
-					$LCGraph->setContentId( $cid );
-					$graphHash = array( 'content_type_guid'=>BITCATEGORY_CONTENT_TYPE_GUID );
-					$graphArray = $LCGraph->getHeadGraph( $graphHash );
-					BitCategory::graphArrayToOptions( $catOptions, $graphArray );
-				}
+				$LCGraph->setContentId( $cid );
+				$graphHash = array( 'content_type_guid'=>BITCATEGORY_CONTENT_TYPE_GUID );
+				$graphArray = $LCGraph->getHeadGraph( $graphHash );
+				BitCategory::graphArrayToOptions( $catOptions, $graphArray );
 			}
 		}
 		// vd( $catOptions );
@@ -659,10 +696,36 @@ function categories_content_edit( $pObject, $pParamHash ){
 	}
 }
 function categories_content_store( $pObject, $pParamHash ){
-	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
-		$categories = new BitCategory( $pObject->mContentId ); 
-		if( !$categories->store( $pParamHash ) ){
-			$pObject->setError( 'categories', $categories->mErrors );
+	global $gBitSmarty, $gBitUser, $gBitSystem;
+
+	if( is_object($pObject) && isset($pObject->mContentTypeGuid) &&
+		$pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) &&
+		$gBitUser->hasPermission( 'p_categories_categorize' ) ) {
+
+		// clear existing
+		$categories = new BitCategory(); 
+		$categories->degraphContent( $pObject->mContentId );
+
+		// if category values submitted
+		// expected submit hash $pParamHash['cat_options'][$id][$cats] 
+		if( !empty( $pParamHash['cat_options'] ) ){
+			$pParamHash['categories'] = array();
+			foreach( array_keys( $pParamHash['cat_options'] ) as $cid ){
+				// check if content has this root
+				if( $pObject->hasService( 'service_category_content_id_'.$cid ) && !empty( $pParamHash['cat_options'][$cid] ) ){
+					// make sure we're not trying to store an empty string
+					if( count( $pParamHash['cat_options'][$cid] ) > 1 || 
+						!empty( $pParamHash['cat_options'][$cid][0] ) )
+					{
+						// pass the sub selections to categories service
+						$pParamHash['categories'] = array_merge( $pParamHash['categories'], $pParamHash['cat_options'][$cid] ); 
+						// vd( $storeHash );
+					}
+				}
+			}
+			if( !$categories->graphContent( $pObject->mContentId, $pParamHash ) ){
+				$pObject->setError( 'categories', $categories->mErrors );
+			}
 		}
 	}
 }
