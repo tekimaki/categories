@@ -9,7 +9,7 @@
 						{tr}Select one...{/tr}
 					</option>
 					{foreach from=$optionlist.options key=content_id item=option}
-						<option value="{$content_id}" {if $option.selected}selected="selected"{/if}>
+						<option value="{$content_id}" {if in_array($content_id,$catGraphs)}selected="selected"{/if}>
 							{foreach from=$option item=node}
 								{if $node.content_id != $optionlist_c_id} &raquo;{/if} {$node.title|escape}
 							{/foreach}

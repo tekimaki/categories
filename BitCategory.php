@@ -399,6 +399,13 @@ class BitCategory extends LibertyMime {
 			$LCGraph = new LibertyGraph();
 		}
 
+		// get list of categories graphed to a content id
+		if( !empty( $pParamHash['head_content_id'] ) ){
+			$joinSql .= " INNER JOIN `".BIT_DB_PREFIX."liberty_edge` lcedge2 ON ( lc.`content_id` = lcedge2.`tail_content_id` )";
+			$whereSql .= " AND lcedge2.`head_content_id` = ?";
+			$bindVars[] = $pParamHash['head_content_id'];
+		}
+
 		/* =-=- CUSTOM END: getList -=-= */
 
 
@@ -637,6 +644,14 @@ class BitCategory extends LibertyMime {
 		$this->mDb->query( $query, $bindVars );
 	}
 
+	public function getContentCategories( $pContentId ){
+		$listHash = array( 
+			'head_content_id' => $pContentId, 
+			'all' => TRUE,
+		);
+		return $this->getList( $listHash );
+	}
+
 	/* =-=- CUSTOM END: methods -=-= */
 
 
@@ -647,8 +662,8 @@ class BitCategory extends LibertyMime {
 function categories_content_display( $pObject, $pParamHash ){
 	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
 		// @TODO - load up categories for content object
-		// $categories = new BitCategory(); 
-		// $pObject->mInfo['categories'] = $categories->previewFields( $pParamHash );
+		$categories = new BitCategory(); 
+		$pObject->mInfo['categories'] = $categories->getContentCategories( $pObject->mContentId );
 	}
 }
 function categories_content_preview( $pObject, $pParamHash ){
@@ -666,6 +681,14 @@ function categories_content_edit( $pObject, $pParamHash ){
 
 		// pass through to display to load up content data
 		categories_content_display( $pObject, $pParamHash );
+
+		if( !empty( $pObject->mInfo['categories'] ) ){
+			$catGraphs = array();
+			foreach( $pObject->mInfo['categories'] as $cat ){
+				$catGraphs[] = $cat['content_id'];
+			}
+			$gBitSmarty->assign( 'catGraphs', $catGraphs );
+		}
 
 		// load up cat root ids for services content type has
 		// expected options hash $catOptions[$id][$cats];
