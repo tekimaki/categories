@@ -547,9 +547,130 @@ class BitCategory extends LibertyMime {
 		return NULL;
 	}
 
+	public static function getRootContentIds(){
+		global $gBitSystem;
+		$query = "SELECT category.content_id, lc.title 
+					FROM `".BIT_DB_PREFIX."category_data` category
+					INNER JOIN `".BIT_DB_PREFIX."liberty_content` lc ON ( category.content_id = lc.content_id )
+					INNER JOIN `".BIT_DB_PREFIX."liberty_edge` lcedge ON ( lc.`content_id` = lcedge.`head_content_id` )
+					AND lcedge.`tail_content_id` IS NULL ORDER BY lc.title";
+		$ret = $gBitSystem->mDb->getArray( $query );
+		return $ret;
+	}
+
+	/**
+	 *  graphArrayToOptions
+ 
+		this:
+		120
+		120/119
+		120/119/36
+
+		to this:
+		120 ( title, options(  
+			119 ( 120,119 )
+			36	( 120,119,36 )
+		)
+	*/
+	public static function graphArrayToOptions( &$pRet, $pGraphArray ){
+        if( $pGraphArray ) {
+			foreach( array_keys( $pGraphArray ) as $conId ){
+				$delimPos = strrpos( $conId, '/' );
+				$cid = substr( $conId, ($delimPos>0)?$delimPos+1:$delimPos );
+				$contentIdMap[$cid] = $conId; 
+			}
+
+			$cant = 0;
+			$cid = NULL;
+			foreach( $contentIdMap as $contentId => $conId ){
+				if( $cant == 0 ){
+					$cid = $contentId;
+				}
+				$path = explode( '/', $conId );
+				foreach( $path as $contentId2 ){
+					if( $cant == 0 ){
+						$pRet[$cid]['content'] = $pGraphArray[$contentIdMap[$contentId2]];
+					}else{
+						$pRet[$cid]['options'][$contentId][] = $pGraphArray[$contentIdMap[$contentId2]];
+					}
+				}
+				$cant++;
+			}
+        }   
+    }
+
 	/* =-=- CUSTOM END: methods -=-= */
 
 
 	// }}} -- end of Custom Helper Methods
 
+}
+
+function categories_content_display( $pObject, $pParamHash ){
+	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
+		$categories = new BitCategory(); 
+		// @TODO - load up categories for content object
+		// $pObject->mInfo['categories'] = $categories->previewFields( $pParamHash );
+	}
+}
+function categories_content_preview( $pObject, $pParamHash ){
+	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
+		$categories = new BitCategory(); 
+		$pObject->mInfo['categories'] = $categories->previewFields( $pParamHash );
+	}
+}
+function categories_content_edit( $pObject, $pParamHash ){
+	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
+		// pass through to display to load up content data
+		categories_content_display( $pObject, $pParamHash );
+
+		// load up cat root ids for services content type has
+		// expected options hash $catOptions[$id][$cats];
+		global $gBitSmarty, $gBitUser, $gBitSystem;
+		$catOptions = array();
+		$catOptionsLabels = array();
+
+		if( is_object($pObject) && isset($pObject->mContentTypeGuid) &&
+			$gBitUser->hasPermission( 'p_categories_categorize' ) ) {
+
+			$lcconfig = LCConfig::getInstance();
+
+			// $category = new BitCategory();
+
+			// Implement LibertyGraph
+			require_once( LIBERTYGRAPH_PKG_PATH.'LibertyGraph.php' );
+			$LCGraph = new LibertyGraph();
+
+			// get list of services for content type
+			$catOptions = array();
+			foreach( $lcconfig->getAllConfig( $pObject->mContentTypeGuid ) as $config=>$value ){
+				if( strpos( $config, 'service_category_content_id' ) !== false  && $value != 'n' ){
+					$cid = substr( $config, strrpos( $config, '_' )+1 );
+
+					$LCGraph->setContentId( $cid );
+					$graphHash = array( 'content_type_guid'=>BITCATEGORY_CONTENT_TYPE_GUID );
+					$graphArray = $LCGraph->getHeadGraph( $graphHash );
+					BitCategory::graphArrayToOptions( $catOptions, $graphArray );
+				}
+			}
+		}
+		// vd( $catOptions );
+		$gBitSmarty->assign( 'catOptions', $catOptions );
+	}
+}
+function categories_content_store( $pObject, $pParamHash ){
+	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
+		$categories = new BitCategory( $pObject->mContentId ); 
+		if( !$categories->store( $pParamHash ) ){
+			$pObject->setError( 'categories', $categories->mErrors );
+		}
+	}
+}
+function categories_content_expunge( $pObject ){
+	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
+		$categories = new BitCategory( $pObject->mContentId ); 
+		if( !$categories->expunge() ){
+			$pObject->setError( 'categories', $categories->mErrors );
+		}
+	}
 }

@@ -62,6 +62,7 @@ if (count($defaults) > 0) {
 $gBitInstaller->registerUserPermissions( CATEGORIES_PKG_NAME, array(
 	array ( 'p_categories_admin'  , 'Can admin the categories package', 'admin'      , CATEGORIES_PKG_NAME ),
 	array ( 'p_categories_view'  , 'Can view the categories package', 'admin'      , CATEGORIES_PKG_NAME ),
+	array ( 'p_categories_categorize'  , 'Can assign content to categories'  , 'editors'      , CATEGORIES_PKG_NAME ),
 	array ( 'p_category_create' , 'Can create a category entry'   , 'editors' , CATEGORIES_PKG_NAME ),
 	array ( 'p_category_view'   , 'Can view category entries'     , 'basic'      , CATEGORIES_PKG_NAME ),
 	array ( 'p_category_update' , 'Can update any category entry' , 'editors'    , CATEGORIES_PKG_NAME ),

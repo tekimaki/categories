@@ -21,6 +21,7 @@
    -==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 */
 
+define( 'LIBERTY_SERVICE_CATEGORIES', 'categorizing' );
 
 global $gBitSystem;
 
@@ -40,5 +41,26 @@ if( $gBitSystem->isPackageActive( 'categories' ) && $gBitUser->hasPermission( 'p
 	);
 	$gBitSystem->registerAppMenu( $menuHash );
 
+	// include service functions
+	require_once( CATEGORIES_PKG_PATH.'BitCategory.php' );
+
+    $gLibertySystem->registerService(
+		LIBERTY_SERVICE_CATEGORIES,
+		CATEGORIES_PKG_NAME,
+        array(
+			'content_preview_function' => 'categories_content_preview',
+			'content_edit_function' => 'categories_content_edit',
+			'content_store_function' => 'categories_content_store',
+			'content_expunge_function' => 'categories_content_expunge',
+
+			// templates
+			'content_edit_mini_tpl' 	=> 'bitpackage:categories/service_edit_mini_inc.tpl',
+			// 'content_view_tpl'          => 'bitpackage:categories/service_view_members_inc.tpl',
+			// 'content_nav_tpl'           => 'bitpackage:categories/service_nav_path_inc.tpl',
+        ),
+        array(
+			'description' => 'Content categorization.'
+        )
+    );
 
 }
