@@ -378,6 +378,11 @@ class BitCategory extends LibertyMime {
 	 */
 	function getList( &$pParamHash ) {
 		global $gBitSystem;
+
+		if( empty( $pParamHash['sort_mode'] ) ){
+			$pParamHash['sort_mode'] = 'title_asc';
+		}
+
 		// this makes sure parameters used later on are set
 		LibertyContent::prepGetList( $pParamHash );
 
