@@ -650,11 +650,15 @@ class BitCategory extends LibertyMime {
 	}
 
 	public function getContentCategories( $pContentId ){
-		$listHash = array( 
-			'head_content_id' => $pContentId, 
-			'all' => TRUE,
-		);
-		return $this->getList( $listHash );
+		$rslt = array();
+		if( $this->verifyId( $pContentId ) ){
+			$listHash = array( 
+				'head_content_id' => $pContentId, 
+				'all' => TRUE,
+			);
+			$rslt =$this->getList( $listHash );
+		}
+		return $rslt;
 	}
 
 	/* =-=- CUSTOM END: methods -=-= */
@@ -666,7 +670,6 @@ class BitCategory extends LibertyMime {
 
 function categories_content_display( $pObject, $pParamHash ){
 	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
-		// @TODO - load up categories for content object
 		$categories = new BitCategory(); 
 		$pObject->mInfo['categories'] = $categories->getContentCategories( $pObject->mContentId );
 	}
