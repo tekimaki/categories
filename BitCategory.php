@@ -762,8 +762,7 @@ function categories_content_store( $pObject, $pParamHash ){
 }
 function categories_content_expunge( $pObject ){
 	if( is_object($pObject) && isset($pObject->mContentTypeGuid) &&
-		$pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) &&
-		$gBitUser->hasPermission( 'p_categories_categorize' ) ) {
+		$pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
 
 		// clear existing
 		$categories = new BitCategory(); 
