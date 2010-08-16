@@ -761,10 +761,12 @@ function categories_content_store( $pObject, $pParamHash ){
 	}
 }
 function categories_content_expunge( $pObject ){
-	if( $pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) ){
-		$categories = new BitCategory( $pObject->mContentId ); 
-		if( !$categories->expunge() ){
-			$pObject->setError( 'categories', $categories->mErrors );
-		}
+	if( is_object($pObject) && isset($pObject->mContentTypeGuid) &&
+		$pObject->hasService( LIBERTY_SERVICE_CATEGORIES ) &&
+		$gBitUser->hasPermission( 'p_categories_categorize' ) ) {
+
+		// clear existing
+		$categories = new BitCategory(); 
+		$categories->degraphContent( $pObject->mContentId );
 	}
 }
