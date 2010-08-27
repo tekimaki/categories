@@ -21,6 +21,21 @@
    -==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 */
 
+global $gBitSystem;
+
+$gBitSystem->registerPackageInfo( CATEGORIES_PKG_NAME, array(
+	'description' => "Provides nested tree categorization of content",
+	));
+
+// Requirements
+$gBitSystem->registerRequirements( CATEGORIES_PKG_NAME, array(
+	'liberty' => array( 'min' => '2.1.5', ),
+	'libertygraph' => array( 'min' => '0.0.0', ),
+));
+
+// Install process
+global $gBitInstaller;
+if( is_object( $gBitInstaller ) ){
 
 $tables = array(
     'category_data' => "
@@ -32,15 +47,9 @@ $tables = array(
 	",
 );
 
-global $gBitInstaller;
-
 foreach( array_keys( $tables ) AS $tableName ) {
 	$gBitInstaller->registerSchemaTable( CATEGORIES_PKG_NAME, $tableName, $tables[$tableName] );
 }
-
-$gBitInstaller->registerPackageInfo( CATEGORIES_PKG_NAME, array(
-	'description' => "Provides nested tree categorization of content",
-	));
 
 // $indices = array();
 // $gBitInstaller->registerSchemaIndexes( CATEGORIES_PKG_NAME, $indices );
@@ -76,9 +85,4 @@ $gBitInstaller->registerPreferences( CATEGORIES_PKG_NAME, array(
 	array ( CATEGORIES_PKG_NAME , 'category_list_title'            , 'y'              ),
 ));
 
-// Requirements
-$gBitInstaller->registerRequirements( CATEGORIES_PKG_NAME, array(
-	'liberty' => array( 'min' => '2.1.5', ),
-	'libertygraph' => array( 'min' => '0.0.0', ),
-
-));
+}
