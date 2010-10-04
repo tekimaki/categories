@@ -1,0 +1,56 @@
+---
+categories: 
+  version: 0.0.0
+  required: false
+  requirements: 
+    liberty: 
+      min: 2.1.5
+    libertygraph: 
+      min: 0.0.0
+  description: >
+    Provides nested tree categorization of content
+  license: 
+    name: LGPL
+    description: Licensed under the GNU LESSER GENERAL PUBLIC LICENSE.
+    url: http://www.gnu.org/copyleft/lesser.html 
+  homeable: false
+  tables: 
+    category_data: |
+      
+      category_id I4 PRIMARY,
+      content_id I4 NOTNULL
+      CONSTRAINT '
+      , CONSTRAINT `category_content_ref` FOREIGN KEY (`content_id`) REFERENCES `liberty_content` (`content_id`)
+      '
+      
+  sequences: 
+    category_data_id_seq: 
+      start: 1
+  permissions: 
+    p_categories_admin: 
+      description: Can admin the categories package
+      level: admin
+    p_categories_view: 
+      description: Can view the categories package
+      level: admin
+    p_categories_categorize: 
+      description: Can assign content to categories
+      level: editors
+    p_category_create: 
+      description: Can create a category entry
+      level: editors
+    p_category_view: 
+      description: Can view category entries
+      level: basic
+    p_category_update: 
+      description: Can update any category entry
+      level: editors
+    p_category_expunge: 
+      description: Can delete any category entry
+      level: admin
+    p_category_admin: 
+      description: Can admin any category entry
+      level: admin
+  preferences: 
+    category_default_ordering: category_id_desc
+    category_list_title: 'y'
