@@ -54,3 +54,5 @@ categories:
   preferences: 
     category_default_ordering: category_id_desc
     category_list_title: 'y'
+  contenttypes:
+    BitCategory: BitCategory.php
