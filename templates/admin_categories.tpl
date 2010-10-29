@@ -69,7 +69,7 @@
 						</div>
 					{/foreach}
 				{/legend}
-				<div class="row submit">
+				<div class="buttonHolder row submit">
 					<input type="submit" name="categories_settings" value="{tr}Change preferences{/tr}" />
 				</div>
 			{/jstab}
